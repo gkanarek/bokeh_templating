@@ -5,9 +5,11 @@ Created on Fri Jul 20 10:03:35 2018
 
 @author: gkanarek
 """
-
+import os
 import numpy as np
 from bokeh_templating import BokehTemplate
+
+file_dir = os.path.dirname(os.path.realpath(__file__))
 
 class TestBokehApp(BokehTemplate):
     
@@ -15,7 +17,7 @@ class TestBokehApp(BokehTemplate):
         self.a, self.b = 4, 2
         
         self.format_string = None
-        self.interface_file = "example_interface.yaml"
+        self.interface_file = os.path.join(file_dir, "example_interface.yaml")
     
     post_init = None
     
