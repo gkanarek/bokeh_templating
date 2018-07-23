@@ -9,17 +9,13 @@ Created on Fri Jul 20 10:03:35 2018
 import numpy as np
 from bokeh_templating import BokehTemplate
 
-widget_formats = """
-Figure:
-"""
-
 class TestBokehApp(BokehTemplate):
     
     def pre_init(self):
         self.a, self.b = 4, 2
         
-        self.format_string = None #widget_formats
-        self.interface_file = "test_interface.yaml"
+        self.format_string = None
+        self.interface_file = "example_interface.yaml"
     
     post_init = None
     
