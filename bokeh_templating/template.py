@@ -8,7 +8,7 @@ Created on Fri Jul 20 09:49:53 2018
 
 import yaml
 import os
-import factory
+from . import factory
 
 class BokehTemplateParserError(Exception):
     """

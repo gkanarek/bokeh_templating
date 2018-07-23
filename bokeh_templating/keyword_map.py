@@ -8,7 +8,7 @@ Created on Thu Jul 19 09:54:47 2018
 
 from inspect import getmembers, isclass, isfunction
 from bokeh import models, plotting, layouts
-from bokeh_surface import Surface3d
+from .bokeh_surface import Surface3d
 
 bokeh_sequences = {}
 bokeh_mappings = {"Surface3d": Surface3d} # Note that abstract base classes *are* included

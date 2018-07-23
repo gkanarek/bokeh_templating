@@ -7,7 +7,7 @@ Created on Fri Jul 20 10:03:35 2018
 """
 
 import numpy as np
-from template import BokehTemplate
+from bokeh_templating import BokehTemplate
 
 widget_formats = """
 Figure:
