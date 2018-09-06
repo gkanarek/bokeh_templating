@@ -9,10 +9,16 @@ Created on Fri Jul 20 09:49:53 2018
 import yaml
 import os
 from . import factory
+from bokeh.embed import components
 
 class BokehTemplateParserError(Exception):
     """
     A custom error for problems with parsing the interface files.
+    """
+
+class BokehTemplateEmbedError(Exception):
+    """
+    A custom error for problems with embedding components.
     """
 
 class BokehTemplate(object):
@@ -25,6 +31,8 @@ class BokehTemplate(object):
     _sequence_factory = factory.sequence_factory
     _figure_constructor = factory.figure_constructor
     _document_constructor = factory.document_constructor
+    
+    _embed = False
     
     def _self_constructor(self, loader, tag_suffix, node):
         """
@@ -66,8 +74,9 @@ class BokehTemplate(object):
         
         raise NotImplementedError
     
-    def __init__(self):
+    def __init__(self, embed=False):
         self._register_default_constructors()
+        self._embed = embed
         
         #Allow for pre-init stuff from the subclass.
         if self.pre_init is not None:
@@ -114,7 +123,7 @@ class BokehTemplate(object):
             interface = f.read()
         
         #First, let's make sure that there's a Document in here
-        if '!Document' not in interface:
+        if not self._embed and '!Document' not in interface:
             raise BokehTemplateParserError("Interface file must contain a Document tag")
         
         #Now, since we've registered all the constructors, we can parse the 
@@ -124,6 +133,11 @@ class BokehTemplate(object):
         
         self.full_stream = list(yaml.load_all(interface))
         
+    def embed(self, ref):
+        element = self.refs.get(ref, None)
+        if element is None:
+            raise BokehTemplateEmbedError("Undefined component reference")
+        return components(element)
     
     def register_sequence_constructor(self, tag, parse_func):
         if tag.startswith("!"):

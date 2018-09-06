@@ -6,8 +6,26 @@ Created on Mon May 21 13:45:34 2018
 @author: gkanarek
 """
 
-from bokeh.core.properties import Instance, String
+from __future__ import division
+
+from bokeh.core.properties import Instance, String, Any, Dict
 from bokeh.models import ColumnDataSource, LayoutDOM
+
+DEFAULTS = {
+    'width':          '600px',
+    'height':         '600px',
+    'style':          'surface',
+    'showPerspective': True,
+    'showGrid':        True,
+    'keepAspectRatio': True,
+    'verticalRatio':   1.0,
+    'legendLabel':     'stuff',
+    'cameraPosition':  {
+        'horizontal': -0.35,
+        'vertical':    0.22,
+        'distance':    1.8,
+    }
+}
 
 JS_CODE = """
 # This file contains the JavaScript (CoffeeScript) implementation
@@ -28,8 +46,8 @@ import {LayoutDOM, LayoutDOMView} from "models/layouts/layout_dom"
 # This defines some default options for the Graph3d feature of vis.js
 # See: http://visjs.org/graph3d_examples.html for more details.
 OPTIONS =
-  width:  '800px'
-  height: '800px'
+  width:  '600px'
+  height: '600px'
   style: 'surface'
   showPerspective: true
   showGrid: true
@@ -42,9 +60,14 @@ OPTIONS =
     distance: 1.8
 
 # To create custom model extensions that will render on to the HTML canvas
-# or into the DOM, we must create a View subclass for the model.
+# or into the DOM, we must create a View subclass for the model. Currently
+# Bokeh models and views are based on BackBone. More information about
+# using Backbone can be found here:
 #
-# In this case we will subclass from the existing BokehJS ``LayoutDOMView``
+#     http://backbonejs.org/
+#
+# In this case we will subclass from the existing BokehJS ``LayoutDOMView``,
+# corresponding to our
 export class Surface3dView extends LayoutDOMView
 
   initialize: (options) ->
@@ -63,15 +86,15 @@ export class Surface3dView extends LayoutDOMView
     # already been loaded (e.g. in a custom app template). In the future Bokeh
     # models will be able to specify and load external scripts automatically.
     #
-    # BokehJS Views create <div> elements by default, accessible as @el. Many
+    # Backbone Views create <div> elements by default, accessible as @el. Many
     # Bokeh views ignore this default <div>, and instead do things like draw
     # to the HTML canvas. In this case though, we use the <div> to attach a
     # Graph3d to the DOM.
-    @_graph = new vis.Graph3d(@el, @get_data(), OPTIONS)
+    @_graph = new vis.Graph3d(@el, @get_data(), @model.options)
 
-    # Set a listener so that when the Bokeh data source has a change
+    # Set Backbone listener so that when the Bokeh data source has a change
     # event, we can process the new data
-    @connect(@model.data_source.change, () =>
+    @listenTo(@model.data_source, 'change', () =>
         @_graph.setData(@get_data())
     )
 
@@ -88,7 +111,7 @@ export class Surface3dView extends LayoutDOMView
       })
     return data
 
-# We must also create a corresponding JavaScript BokehJS model subclass to
+# We must also create a corresponding JavaScript Backbone model sublcass to
 # correspond to the python Bokeh model subclass. In this case, since we want
 # an element that can position itself in the DOM according to a Bokeh layout,
 # we subclass from ``LayoutDOM``
@@ -111,6 +134,7 @@ export class Surface3d extends LayoutDOM
     y:           [ p.String           ]
     z:           [ p.String           ]
     data_source: [ p.Instance         ]
+    options:     [ p.Any,     OPTIONS ]
   }
 """
 
@@ -131,18 +155,22 @@ class Surface3d(LayoutDOM):
     # also support type validation. More information about properties in
     # can be found here:
     #
-    #    https://bokeh.pydata.org/en/latest/docs/reference/core.html#bokeh-core-properties
+    #    http://bokeh.pydata.org/en/latest/docs/reference/core.html#bokeh-core-properties
 
     # This is a Bokeh ColumnDataSource that can be updated in the Bokeh
     # server by Python code
     data_source = Instance(ColumnDataSource)
 
-    # The vis.js library that we are wrapping expects data for x, y, and z.
-    # The data will actually be stored in the ColumnDataSource, but these
-    # properties let us specify the *name* of the column that should be
-    # used for each field.
+    # The vis.js library that we are wrapping expects data for x, y, z, and
+    # color. The data will actually be stored in the ColumnDataSource, but
+    # these properties let us specify the *name* of the column that should
+    # be used for each field.
     x = String
 
     y = String
 
     z = String
+
+    color = String
+    
+    options = Dict(String, Any, default=DEFAULTS)

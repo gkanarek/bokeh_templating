@@ -99,26 +99,45 @@ def figure_constructor(tool, loader, node):
     
     for element in elements:
         key = element.pop('kind')
-        if key == 'line':
-            line_fmt = tool.formats.get('Line', {})
-            line_fmt.update(element)
-            figure.line('x', 'y', **line_fmt)
-        elif key == 'circle':
-            circle_fmt = tool.formats.get('Circle', {})
-            circle_fmt.update(element)
-            figure.circle('x', 'y', **circle_fmt)
+        shape = {'line': ('Line', figure.line),
+                 'circle': ('Circle', figure.circle),
+                 #'step': ('Step', figure.step), #not supported in 0.12.5
+                 'diamond': ('Diamond', figure.diamond),
+                 'triangle': ('Triangle', figure.triangle),
+                 'square': ('Square', figure.square),
+                 'asterisk': ('Asterisk', figure.asterisk),
+                 'x': ('XGlyph', figure.x)}
+        if key in shape:
+            fmt_key, glyph = shape[key]
+            shape_fmt = tool.formats.get(fmt_key, {})
+            shape_fmt.update(element)
+            x = shape_fmt.pop('x', 'x')
+            y = shape_fmt.pop('y', 'y')
+            glyph(x, y, **shape_fmt)
         elif key == 'rect':
             rect_fmt = tool.formats.get('Rect', {})
             rect_fmt.update(element)
             figure.rect('rx', 'ry', 'rw', 'rh', **rect_fmt)
-        elif key == 'step':
-            step_fmt = tool.formats.get('Step', {})
-            step_fmt.update(element)
-            figure.step('x', 'y', **step_fmt)
         elif key == 'quad':
             quad_fmt = tool.formats.get('Quad', {})
             quad_fmt.update(element)
             figure.quad(**quad_fmt)
+        elif key == 'image':
+            image_fmt = tool.formats.get('Image', {})
+            image_fmt.update(element)
+            arg = image_fmt.pop("image", None)
+            figure.image(arg, **image_fmt)
+        elif key == 'image_rgba':
+            image_fmt = tool.formats.get('ImageRGBA', {})
+            image_fmt.update(element)
+            arg = image_fmt.pop("image", None)
+            figure.image_rgba(arg, **image_fmt)
+        elif key == 'multi_line':
+            multi_fmt = tool.formats.get('MultiLine', {})
+            multi_fmt.update(element)
+            import pdb; pdb.set_trace()
+            figure.multi_line(**multi_fmt)
+            
             
     for attr, val in axis.items():
         #change axis attributes, hopefully

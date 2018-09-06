@@ -7,7 +7,7 @@ Created on Thu Jul 19 09:54:47 2018
 """
 
 from inspect import getmembers, isclass, isfunction
-from bokeh import models, plotting, layouts
+from bokeh import models, plotting, layouts, charts
 from .bokeh_surface import Surface3d
 
 bokeh_sequences = {}
@@ -17,9 +17,14 @@ def parse_module(module):
     test = lambda nm, mem: (not nm.startswith("_")) and (module.__name__ in mem.__module__)
     seqs = {nm: mem for nm, mem in getmembers(module, isfunction) if test(nm, mem)}
     maps = {nm: mem for nm, mem in getmembers(module, isclass) if test(nm, mem)}
+    #these need to be mappings
+    if 'gridplot' in seqs: 
+        maps['gridplot'] = seqs.pop('gridplot')
+    if 'Donut' in seqs:
+        maps['Donut'] = seqs.pop('Donut')
     return (seqs, maps)
 
-for module in [models, plotting, layouts]:
+for module in [models, plotting, layouts, charts]:
     seqs, maps = parse_module(module)
     bokeh_sequences.update(seqs)
     bokeh_mappings.update(maps)
